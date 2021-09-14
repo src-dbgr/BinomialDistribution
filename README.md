@@ -1,5 +1,5 @@
 # Binomial Distribution - Heuristic Approach vs Mathematical
-Simple implementaiton of Binomial distribution
+Simple implementation of Binomial distribution
 
 You may play around with the values within BinomialDistribution.java
 - iterations = 100_000;
