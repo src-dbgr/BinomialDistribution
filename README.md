@@ -7,7 +7,7 @@ You may play around with the values within BinomialDistribution.java
 - checkBinomialDistributionValue = 43;
 - successRate = 0.95;
 
-The program returs a heuristic random value approach and for comparison an accurate mathematical implementation
+The program returns a heuristic random value approach and for comparison an accurate mathematical implementation
 
 ## Run the program
 You need to have Java SDK installed and [Path variables](https://javatutorial.net/set-java-home-windows-10) set accordingly
