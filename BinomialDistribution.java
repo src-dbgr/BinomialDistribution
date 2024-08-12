@@ -1,123 +1,165 @@
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+/**
+ * A class to simulate and calculate the binomial distribution using both heuristic 
+ * and mathematical approaches.
+ * 
+ * The binomial distribution gives the probability of having a fixed number of successes
+ * in a fixed number of independent trials, each with the same probability of success.
+ */
 public class BinomialDistribution {
-	SecureRandom rand = new SecureRandom();
-	int iterations = 100000;
-	int maxPossiblePositives = 50;
-	int checkBinomialDistributionValue = 43;
-	double successRate = 0.95;
 
-	public static void main(String[] args) {
-		BinomialDistribution bd = new BinomialDistribution();
-		long startTime = System.nanoTime();
-		Map<Integer, Integer> iterateExperiment = bd.iterateExperiment();
-		List<Integer> sortedKeys = new ArrayList<Integer>(iterateExperiment.keySet());
-		Collections.sort(sortedKeys);
-		for (Integer key : sortedKeys) {
-			System.out.println("BinomialDistributionValue: " + key + " Probability: " + (iterateExperiment.get(key) * 1.0 / bd.iterations));
+    private final SecureRandom random = new SecureRandom();
+    private final int iterations;
+    private final int maxPossiblePositives;
+    private final BigDecimal successRate;
+    private final MathContext mathContext = new MathContext(34, RoundingMode.HALF_UP); // Using 34 digits precision
+
+    /**
+     * Constructor to initialize the binomial distribution parameters.
+     * 
+     * @param iterations          the number of iterations to simulate
+     * @param maxPossiblePositives the maximum number of positive outcomes in a trial
+     * @param successRate         the probability of success in each trial
+     */
+	public BinomialDistribution(int iterations, int maxPossiblePositives, double successRate) {
+		if (iterations <= 0) {
+			throw new IllegalArgumentException("Iterations must be greater than 0.");
 		}
-		long stopTime = System.nanoTime();
-		System.out.println("\nTime Taken to Calculate:");
-		System.out.println(TimeUnit.NANOSECONDS.toMillis((stopTime - startTime)) + " Milliseconds");
-		System.out.println("\nRunning " + bd.iterations + " iterations.");
-
-		System.out.println(
-				"\nHeuristic Binomial Distribution Probability Result for: " + bd.checkBinomialDistributionValue);
-		System.out.println(iterateExperiment.get(bd.checkBinomialDistributionValue) * 1.0 / bd.iterations);
-
-		System.out.println(
-				"\nMathematicalBinomial Distribution Probability Result for: " + bd.checkBinomialDistributionValue);
-		System.out.println(bd.calcBinomialDistributionMath(bd.checkBinomialDistributionValue));
+		if (maxPossiblePositives <= 0) {
+			throw new IllegalArgumentException("MaxPossiblePositives must be greater than 0.");
+		}
+		if (successRate <= 0.0 || successRate > 1.0) {
+			throw new IllegalArgumentException("Success rate must be between 0 (exclusive) and 1 (inclusive).");
+		}
+		this.iterations = iterations;
+		this.maxPossiblePositives = maxPossiblePositives;
+		this.successRate = BigDecimal.valueOf(successRate);
 	}
 
-	int calcDistribution() {
-		int positives = 0;
-		for (int i = 0; i < maxPossiblePositives; i++) {
-			positives = rand.nextDouble() <= successRate ? ++positives : positives;
-		}
-		return positives;
-	}
+    /**
+     * The main method to execute the binomial distribution experiment.
+     * 
+     * @param args command line arguments (not used)
+     */
+    public static void main(String[] args) {
+        // Define parameters for the experiment
+        int iterations = 100_000;
+        int maxPositives = 50;
+        double successRate = 0.95;
+        int targetValue = 43;
 
-	Map<Integer, Integer> iterateExperiment() {
-		Map<Integer, Integer> results = new HashMap<Integer, Integer>();
-		int positive = 0;
-		for (int i = 0; i < iterations; i++) {
-			positive = calcDistribution();
-			results.put(positive, results.containsKey(positive) ? (results.get(positive) + 1) : 1);
-		}
-		return results;
-	}
+        // Create an instance of BinomialDistribution and run the experiment
+        BinomialDistribution bd = new BinomialDistribution(iterations, maxPositives, successRate);
+        bd.runExperiment(targetValue);
+    }
 
-	// P(positives,negatives|successrate) = (maxPossiblePositives over positives) *
-	// (successrate)^positives * (1 - successrate)^negatives
-	double calcBinomialDistributionMath(int checkProbabilityFor) {
-		int positives = checkProbabilityFor;
-		int negatives = (maxPossiblePositives - checkProbabilityFor);
-		return binomial(maxPossiblePositives, positives) * Math.pow(successRate, (double) positives)
-				* Math.pow((1 - successRate), negatives);
-	}
+    /**
+     * Runs the experiment to compare the heuristic and mathematical binomial distribution.
+     * 
+     * @param targetValue the specific number of successes to calculate probabilities for
+     */
+    public void runExperiment(int targetValue) {
+        long startTime = System.nanoTime();  // Record start time for performance measurement
+        Map<Integer, Long> results = calculateHeuristicDistribution();  // Perform heuristic simulation
+        long stopTime = System.nanoTime();  // Record end time
 
-	class Distribution {
-		int positive = 0;
-		int negative = 0;
+        // Print the results from the heuristic approach
+        printResults(results);
+        System.out.println("\nTime Taken to Calculate: " + TimeUnit.NANOSECONDS.toMillis(stopTime - startTime) + " ms");
 
-		public Distribution(int positive, int negative) {
-			this.positive = positive;
-			this.negative = negative;
-		}
+        // Calculate and print the probability for the target value using both approaches
+        BigDecimal heuristicProbability = BigDecimal.valueOf(results.getOrDefault(targetValue, 0L))
+                .divide(BigDecimal.valueOf(iterations), mathContext);
+        BigDecimal mathematicalProbability = calculateMathematicalProbability(targetValue);
 
-		@Override
-		public String toString() {
-			return "Positve: " + this.positive + " Negative: " + this.negative;
-		}
-	}
+        System.out.println("\nHeuristic Probability for " + targetValue + ": " + heuristicProbability);
+        System.out.println("Mathematical Probability for " + targetValue + ": " + mathematicalProbability);
+    }
 
-	public int binomial(int n, int k) {
-		checkNonNegative("n", n);
-		checkNonNegative("k", k);
-		checkArgument(k <= n, "k (%s) > n (%s)", k, n);
-		if (k > (n >> 1)) {
-			k = n - k;
-		}
-		if (k >= biggestBinomials.length || n > biggestBinomials[k]) {
-			return Integer.MAX_VALUE;
-		}
-		switch (k) {
-		case 0:
-			return 1;
-		case 1:
-			return n;
-		default:
-			long result = 1;
-			for (int i = 0; i < k; i++) {
-				result *= n - i;
-				result /= i + 1;
+    /**
+     * Simulates the binomial distribution using a heuristic approach by running a large 
+     * number of trials.
+     * 
+     * @return a map containing the number of successes and their respective frequencies
+     */
+    private Map<Integer, Long> calculateHeuristicDistribution() {
+        // Parallel stream to enhance performance during large-scale simulation
+        return IntStream.range(0, iterations)
+                .parallel()
+                .mapToObj(i -> simulateSingleExperiment())
+                .collect(Collectors.groupingByConcurrent(Integer::intValue, Collectors.counting()));
+    }
+
+    /**
+     * Simulates a single binomial experiment.
+     * 
+     * @return the number of successes in this single experiment
+     */
+    private int simulateSingleExperiment() {
+        // Count the number of successes in a single experiment
+        return (int) IntStream.range(0, maxPossiblePositives)
+                .filter(i -> random.nextDouble() <= successRate.doubleValue())
+                .count();
+    }
+
+    /**
+     * Calculates the exact probability of a specific number of successes using the 
+     * binomial distribution formula.
+     * 
+     * @param positives the number of successes to calculate the probability for
+     * @return the probability of having exactly the given number of successes
+     */
+    private BigDecimal calculateMathematicalProbability(int positives) {
+        int negatives = maxPossiblePositives - positives;
+        BigDecimal successProb = successRate.pow(positives, mathContext);
+        BigDecimal failureProb = BigDecimal.ONE.subtract(successRate, mathContext).pow(negatives, mathContext);
+
+        return binomialCoefficient(maxPossiblePositives, positives)
+                .multiply(successProb, mathContext)
+                .multiply(failureProb, mathContext);
+    }
+
+    /**
+     * Computes the binomial coefficient, which is "n choose k", the number of ways to choose 
+     * k successes from n trials.
+     * 
+     * @param n the total number of trials
+     * @param k the number of successes
+     * @return the binomial coefficient as a BigDecimal
+     */
+    private BigDecimal binomialCoefficient(int n, int k) {
+        k = Math.min(k, n - k);  // Take advantage of symmetry to reduce calculations
+        BigDecimal result = BigDecimal.ONE;
+        for (int i = 1; i <= k; i++) {
+			try {
+				result = result.multiply(BigDecimal.valueOf(n - i + 1), mathContext)
+										.divide(BigDecimal.valueOf(i), mathContext);
+			} catch (ArithmeticException e) {
+				System.err.println("An arithmetic exception occurred: " + e.getMessage());
+				return BigDecimal.ZERO;
 			}
-			return (int) result;
-		}
-	}
+        }
+        return result;
+    }
 
-	// binomial(biggestBinomials[k], k) fits in an int, but not
-	// binomial(biggestBinomials[k]+1,k).
-	int[] biggestBinomials = { Integer.MAX_VALUE, Integer.MAX_VALUE, 65536, 2345, 477, 193, 110, 75, 58, 49, 43, 39, 37,
-			35, 34, 34, 33 };
-
-	double checkNonNegative(String role, double x) {
-		if (!(x >= 0)) { // not x < 0, to work with NaN.
-			throw new IllegalArgumentException(role + " (" + x + ") must be >= 0");
-		}
-		return x;
-	}
-
-	public void checkArgument(boolean b, String errorMessageTemplate, int p1, int p2) {
-		if (!b) {
-		}
-	}
-
+    /**
+     * Prints the results of the heuristic distribution calculation.
+     * 
+     * @param results a map of the number of successes to their frequencies
+     */
+    private void printResults(Map<Integer, Long> results) {
+        results.keySet().stream()
+                .sorted()
+                .forEach(key -> System.out.println("Value: " + key + " Probability: " + 
+                        BigDecimal.valueOf(results.get(key))
+                                  .divide(BigDecimal.valueOf(iterations), mathContext)));
+    }
 }
