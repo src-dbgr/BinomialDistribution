@@ -6,19 +6,19 @@ This project implements a simulation and calculation of the binomial distributio
 
 The binomial distribution is a discrete probability distribution that models the number of successes in a fixed number of independent Bernoulli trials (where each trial has exactly two possible outcomes: success or failure). The probability of exactly `k` successes out of `n` trials can be calculated using the following formula:
 
-\[
+$$
 P(X = k) = \binom{n}{k} \times p^k \times (1-p)^{n-k}
-\]
-
+$$
 Where:
-- \( n \) is the total number of trials.
-- \( k \) is the number of successes.
-- \( p \) is the probability of success on each trial.
-- \( \binom{n}{k} \) is the binomial coefficient, calculated as:
 
-\[
+$n$ is the total number of trials.
+$k$ is the number of successes.
+$p$ is the probability of success on each trial.
+$\binom{n}{k}$ is the binomial coefficient, calculated as:
+
+$$
 \binom{n}{k} = \frac{n!}{k!(n-k)!}
-\]
+$$
 
 ## Project Structure
 
