@@ -129,8 +129,5 @@ Mathematical Probability for 43: 0.008598104574966741622348937280409044
 ### Precision Handling:
 The use of `BigDecimal` ensures that the calculations maintain high precision, especially when dealing with probabilities close to 0 or 1 or when calculating binomial coefficients for large numbers.
 
-### Parallelization:
-The simulation is parallelized using Java Streams, which allows for faster computation by taking advantage of multi-core processors.
-
 ### Performance:
 The program measures the time taken to perform the calculations, providing insights into the efficiency of the simulation versus the mathematical calculation.
