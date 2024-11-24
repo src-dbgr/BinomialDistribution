@@ -29,20 +29,20 @@ public class BinomialDistribution {
      * @param maxPossiblePositives the maximum number of positive outcomes in a trial
      * @param successRate         the probability of success in each trial
      */
-	public BinomialDistribution(int iterations, int maxPossiblePositives, double successRate) {
-		if (iterations <= 0) {
-			throw new IllegalArgumentException("Iterations must be greater than 0.");
-		}
-		if (maxPossiblePositives <= 0) {
-			throw new IllegalArgumentException("MaxPossiblePositives must be greater than 0.");
-		}
-		if (successRate <= 0.0 || successRate > 1.0) {
-			throw new IllegalArgumentException("Success rate must be between 0 (exclusive) and 1 (inclusive).");
-		}
-		this.iterations = iterations;
-		this.maxPossiblePositives = maxPossiblePositives;
-		this.successRate = BigDecimal.valueOf(successRate);
-	}
+    public BinomialDistribution(int iterations, int maxPossiblePositives, double successRate) {
+        if (iterations <= 0) {
+                throw new IllegalArgumentException("Iterations must be greater than 0.");
+        }
+        if (maxPossiblePositives <= 0) {
+                throw new IllegalArgumentException("MaxPossiblePositives must be greater than 0.");
+        }
+        if (successRate <= 0.0 || successRate > 1.0) {
+                throw new IllegalArgumentException("Success rate must be between 0 (exclusive) and 1 (inclusive).");
+        }
+        this.iterations = iterations;
+        this.maxPossiblePositives = maxPossiblePositives;
+        this.successRate = BigDecimal.valueOf(successRate);
+    }
 
     /**
      * The main method to execute the binomial distribution experiment.
